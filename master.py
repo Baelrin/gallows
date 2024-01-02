@@ -1,6 +1,12 @@
+from enum import Enum
 import random
 import json
 import os
+
+class DifficultyLevel(Enum):
+   EASY = 10
+   MEDIUM = 6
+   HARD = 4
 
 # Load the score from the results.json file if it exists, otherwise initialize it to 0
 if os.path.exists('results.json'):
@@ -10,7 +16,7 @@ if os.path.exists('results.json'):
 else:
  score = 0
 
-def load_words():
+def load_words() -> list:
  # Try to load words from the words.txt file
  try:
      with open('words.txt', 'r') as f:
@@ -28,11 +34,11 @@ def load_words():
      print(f"Unexpected error: {e}")
      exit(1)
 
-def choose_word(words):
+def choose_word(words: list) -> str:
  # Choose a random word from the list of words
  return random.choice(words)
 
-def display_hangman(missed_letters):
+def display_hangman(missed_letters: list) -> None:
  # Display the hangman based on the number of missed letters
  print(" _______")
  print(" |/ |")
@@ -41,11 +47,11 @@ def display_hangman(missed_letters):
  print(" | %s" % ("|" if "|" in missed_letters else ""))
  print("_|_______")
 
-def check_letter(word, guessed_letters, letter):
+def check_letter(word: str, guessed_letters: dict, letter: str) -> bool:
  # Check if the letter is in the word and has not been guessed yet
  return letter in word and letter not in guessed_letters
 
-def choose_difficulty():
+def choose_difficulty() -> int:
  # Ask the user to choose a difficulty level
  difficulty = input("Choose a difficulty level (easy, medium, hard): ")
  if difficulty.lower() == "easy":
@@ -58,7 +64,7 @@ def choose_difficulty():
      print("Invalid choice. Defaulting to easy.")
      return 10
 
-def check_score():
+def check_score() -> None:
  # Check the current score
  if os.path.exists('results.json'):
      with open('results.json', 'r') as f:
@@ -68,7 +74,7 @@ def check_score():
  else:
      print("No scores available yet.")
 
-def get_user_input(word, guessed_letters, score):
+def get_user_input(word: str, guessed_letters: dict, score: int) -> str:
  # Get the user's guess
  while True:
      guess = input("Guess a letter or type 'Score' to check your current score or 'Hint' to receive a hint (price: 5 score points): ")
@@ -81,7 +87,7 @@ def get_user_input(word, guessed_letters, score):
          continue
      return guess
 
-def save_result(word, attempts, result, score):
+def save_result(word: str, attempts: int, result: str, score: int) -> None:
  # Save the result of the game
  data = {
      "word": word,
@@ -112,7 +118,7 @@ def save_result(word, attempts, result, score):
      print(f"Failed to save results: {e}")
      exit(1)
      
-def hint(word, guessed_letters, score):
+def hint(word: str, guessed_letters: dict, score: int) -> None:
   # Check if the user has enough points to use a hint
   if score >= 5:
     # Find a letter in the word that hasn't been guessed yet
@@ -124,7 +130,7 @@ def hint(word, guessed_letters, score):
   else:
     print("Not enough points to use a hint.")
 
-def play_game():
+def play_game() -> None:
    # Play the game
    try:
        words = load_words()
@@ -173,11 +179,12 @@ def play_game():
        exit(1)
 
 while True:
-  try:
-      play_game()
-      restart = input("Do you want to play again? (yes/no): ")
-      if restart.lower() != "yes":
-          break
-  except Exception as e:
-      print(f"An error occurred during the game loop: {e}")
-      exit(1)
+   try:
+       play_game()
+       restart = input("Do you want to play again? (yes/no): ")
+       if restart.lower() != "yes":
+           break
+   except Exception as e:
+       print(f"An error occurred during the game loop: {e}")
+       exit(1)
+
