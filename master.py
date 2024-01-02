@@ -71,7 +71,7 @@ def check_score():
 def get_user_input(word, guessed_letters, score):
  # Get the user's guess
  while True:
-     guess = input("Guess a letter or type 'Score' to check your current score: ")
+     guess = input("Guess a letter or type 'Score' to check your current score or 'Hint' to receive a hint (price: 5 score points): ")
      guess = guess.lower() # Convert to lowercase
      if not guess.isalpha():
          print("Please enter a single letter or 'Score'.")
@@ -111,6 +111,18 @@ def save_result(word, attempts, result, score):
  except Exception as e:
      print(f"Failed to save results: {e}")
      exit(1)
+     
+def hint(word, guessed_letters, score):
+  # Check if the user has enough points to use a hint
+  if score >= 5:
+    # Find a letter in the word that hasn't been guessed yet
+    for letter in word:
+      if letter not in guessed_letters:
+        print("Hint: The word contains the letter '%s'" % letter)
+        return
+    print("No hints left.")
+  else:
+    print("Not enough points to use a hint.")
 
 def play_game():
    # Play the game
@@ -130,6 +142,9 @@ def play_game():
            if not guess.isalpha():
                print("Please enter a letter.")
                continue
+           if guess.lower() == "hint":
+             hint(word, guessed_letters, score)
+             continue
            if guess in guessed_letters or guess in missed_letters:
                print("You have already guessed this letter.")
                continue
