@@ -2,11 +2,18 @@ import random
 import json
 import os
 
+if os.path.exists('results.json'):
+  with open('results.json', 'r') as f:
+      results = json.load(f)
+  score = results[-1]['score'] if results else 0
+else:
+  score = 0
+
 def load_words():
  with open('words.txt', 'r') as f:
-     words = f.read().splitlines()
+      words = f.read().splitlines()
  if not words:
-     raise ValueError("No words found in the file.")
+      raise ValueError("No words found in the file.")
  return words
 
 def choose_word(words):
@@ -26,50 +33,43 @@ def check_letter(word, guessed_letters, letter):
 def choose_difficulty():
  difficulty = input("Choose a difficulty level (easy, medium, hard): ")
  if difficulty.lower() == "easy":
-     return 10
+      return 10
  elif difficulty.lower() == "medium":
-     return 6
+      return 6
  elif difficulty.lower() == "hard":
-     return 4
+      return 4
  else:
-     print("Invalid choice. Defaulting to easy.")
-     return 10
+      print("Invalid choice. Defaulting to easy.")
+      return 10
 
-def get_hint(word, guessed_letters):
- hint = ''
- for letter in word:
-     if letter in guessed_letters:
-         hint += letter
-     else:
-         hint += '_'
- return hint
-
-def request_extra_hint(word, guessed_letters, score):
-   if score >= 2:
-       score -= 2
-       print("Extra hint: ", get_hint(word, guessed_letters))
-   else:
-       print("Not enough points to request an extra hint.")
+def check_score():
+ if os.path.exists('results.json'):
+     with open('results.json', 'r') as f:
+         results = json.load(f)
+     latest_score = score
+     print("Your current score is: ", latest_score)
+ else:
+     print("No scores available yet.")
 
 def get_user_input(word, guessed_letters, score):
  while True:
-     guess = input("Guess a letter or type 'Hint' for an extra hint: ")
+     guess = input("Guess a letter or type 'Score' to check your current score: ")
      guess = guess.lower() # Convert to lowercase
-     if not guess.isalpha() or len(guess) > 1:
-         print("Please enter a single letter or 'Hint'.")
+     if not guess.isalpha():
+         print("Please enter a single letter or 'Score'.")
          continue
-     if guess.lower() == "hint":
-         request_extra_hint(word, guessed_letters, score)
-         continue
+     elif guess.lower() == "score":
+       check_score()
+       continue
      return guess
 
 def save_result(word, attempts, result, score):
  data = {
-     "word": word,
-     "attempts": attempts,
-     "result": result,
-     "score": score # Save score
- }
+      "word": word,
+      "attempts": attempts,
+      "result": result,
+      "score": score # Save score
+  }
 
  if os.path.exists('results.json'):
      with open('results.json', 'r') as f:
@@ -89,8 +89,8 @@ def play_game():
  missed_letters = []
  displayed_word = "_" * len(word)
  max_attempts = choose_difficulty()
- score = 0 # Initialize score
-
+ global score
+ 
  while len(missed_letters) < max_attempts:
      display_hangman(missed_letters)
      print("Current word: ", displayed_word)
@@ -109,7 +109,6 @@ def play_game():
          score += 1 # Increase score for correct guess
      else:
          missed_letters.append(guess)
-         print("Hint: ", get_hint(word, guessed_letters))
          score -= 1 # Decrease score for incorrect guess
 
      if displayed_word == word:
