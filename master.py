@@ -212,4 +212,3 @@ while True:
    except Exception as e:
        print(f"An error occurred during the game loop: {e}")
        exit(1)
-
