@@ -24,36 +24,50 @@ def check_letter(word, guessed_letters, letter):
    else:
        return False
 
+def choose_difficulty():
+   difficulty = input("Choose a difficulty level (easy, medium, hard): ")
+   if difficulty.lower() == "easy":
+       return 10
+   elif difficulty.lower() == "medium":
+       return 6
+   elif difficulty.lower() == "hard":
+       return 4
+   else:
+       print("Invalid choice. Defaulting to easy.")
+       return 10
+
 def play_game():
- words = load_words()
- word = choose_word(words)
- guessed_letters = {}
- missed_letters = []
- displayed_word = "_" * len(word)
+   words = load_words()
+   word = choose_word(words)
+   guessed_letters = {}
+   missed_letters = []
+   displayed_word = "_" * len(word)
+   max_attempts = choose_difficulty()
 
- while len(missed_letters) < 6:
-     display_hangman(missed_letters)
-     print("Current word: ", displayed_word)
-     guess = input("Guess a letter: ")
-     if not guess.isalpha():
-         print("Please enter a letter.")
-         continue
-     if guess in guessed_letters or guess in missed_letters:
-         print("You have already guessed this letter.")
-         continue
-     if check_letter(word, guessed_letters, guess):
-         guessed_letters[guess] = True
-         for i in range(len(word)):
-             if word[i] == guess:
-                displayed_word = displayed_word[:i] + guess + displayed_word[i+1:]
-     else:
-         missed_letters.append(guess)
+   while len(missed_letters) < max_attempts:
+       display_hangman(missed_letters)
+       print("Current word: ", displayed_word)
+       guess = input("Guess a letter: ")
+       if not guess.isalpha():
+           print("Please enter a letter.")
+           continue
+       if guess in guessed_letters or guess in missed_letters:
+           print("You have already guessed this letter.")
+           continue
+       if check_letter(word, guessed_letters, guess):
+           guessed_letters[guess] = True
+           for i in range(len(word)):
+               if word[i] == guess:
+                 displayed_word = displayed_word[:i] + guess + displayed_word[i+1:]
+       else:
+           missed_letters.append(guess)
 
-     if displayed_word == word:
-         print("You won! The word was %s" % word)
-         break
+       if displayed_word == word:
+           print("You won! The word was %s" % word)
+           break
 
- if len(missed_letters) == 6:
-     print("You lost! The word was %s" % word)
-
-play_game()
+   if len(missed_letters) == max_attempts:
+       print("You lost! The word was %s" % word)
+       
+if __name__ == "__main__":
+   play_game()
