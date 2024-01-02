@@ -130,39 +130,59 @@ def hint(word: str, guessed_letters: dict, score: int) -> None:
   else:
     print("Not enough points to use a hint.")
 
+EASY_ATTEMPTS = 10
+MEDIUM_ATTEMPTS = 6
+HARD_ATTEMPTS = 4
+
+def initialize_game(words: list) -> tuple:
+   word = choose_word(words)
+   guessed_letters = {}
+   missed_letters = []
+   displayed_word = "_" * len(word)
+   max_attempts = choose_difficulty()
+   return word, guessed_letters, missed_letters, displayed_word, max_attempts
+
+def handle_user_input(word: str, guessed_letters: dict, score: int) -> str:
+   while True:
+       guess = input("Guess a letter or type 'Score' to check your current score or 'Hint' to receive a hint (price: 5 score points): ")
+       guess = guess.lower() # Convert to lowercase
+       if not guess.isalpha():
+           print("Please enter a single letter or 'Score'.")
+           continue
+       elif guess.lower() == "score":
+           check_score()
+           continue
+       return guess
+
+def update_game_state(word: str, guessed_letters: dict, missed_letters: list, displayed_word: str, guess: str, score: int) -> tuple:
+   if guess in guessed_letters or guess in missed_letters:
+       print("You have already guessed this letter.")
+       return guessed_letters, missed_letters, displayed_word, score
+   if check_letter(word, guessed_letters, guess):
+       guessed_letters[guess] = True
+       for i in range(len(word)):
+           if word[i] == guess:
+               displayed_word = displayed_word[:i] + guess + displayed_word[i+1:]
+       score += 1 # Increase score for correct guess
+   else:
+       missed_letters.append(guess)
+       score -= 1 # Decrease score for incorrect guess
+   return guessed_letters, missed_letters, displayed_word, score
+
 def play_game() -> None:
-   # Play the game
    try:
        words = load_words()
-       word = choose_word(words)
-       guessed_letters = {}
-       missed_letters = []
-       displayed_word = "_" * len(word)
-       max_attempts = choose_difficulty()
+       word, guessed_letters, missed_letters, displayed_word, max_attempts = initialize_game(words)
        global score
 
        while len(missed_letters) < max_attempts:
            display_hangman(missed_letters)
            print("Current word: ", displayed_word)
-           guess = get_user_input(word, guessed_letters, score)
-           if not guess.isalpha():
-               print("Please enter a letter.")
-               continue
+           guess = handle_user_input(word, guessed_letters, score)
            if guess.lower() == "hint":
-             hint(word, guessed_letters, score)
-             continue
-           if guess in guessed_letters or guess in missed_letters:
-               print("You have already guessed this letter.")
+               hint(word, guessed_letters, score)
                continue
-           if check_letter(word, guessed_letters, guess):
-               guessed_letters[guess] = True
-               for i in range(len(word)):
-                  if word[i] == guess:
-                      displayed_word = displayed_word[:i] + guess + displayed_word[i+1:]
-               score += 1 # Increase score for correct guess
-           else:
-               missed_letters.append(guess)
-               score -= 1 # Decrease score for incorrect guess
+           guessed_letters, missed_letters, displayed_word, score = update_game_state(word, guessed_letters, missed_letters, displayed_word, guess, score)
 
            if displayed_word == word:
                print("You won! The word was %s" % word)
@@ -174,10 +194,15 @@ def play_game() -> None:
                print("You lost! The word was %s" % word)
                print("Your final score is %d" % score) # Display final score
                save_result(word, len(missed_letters), "lost", score) # Save score
+   except FileNotFoundError:
+       print("File 'words.txt' not found.")
+       exit(1)
+   except PermissionError:
+       print("Permission denied to access 'results.json'.")
+       exit(1)
    except Exception as e:
        print(f"An error occurred during the game: {e}")
        exit(1)
-
 while True:
    try:
        play_game()
