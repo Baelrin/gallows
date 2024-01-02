@@ -10,11 +10,15 @@ else:
   score = 0
 
 def load_words():
- with open('words.txt', 'r') as f:
-      words = f.read().splitlines()
- if not words:
-      raise ValueError("No words found in the file.")
- return words
+   try:
+       with open('words.txt', 'r') as f:
+           words = f.read().splitlines()
+       if not words:
+           raise ValueError("No words found in the file.")
+       return words
+   except FileNotFoundError:
+       print("File 'words.txt' not found.")
+       exit(1)
 
 def choose_word(words):
  return random.choice(words)
@@ -28,59 +32,60 @@ def display_hangman(missed_letters):
  print("_|_______")
 
 def check_letter(word, guessed_letters, letter):
- return letter in word
-
+   return letter in word and letter not in guessed_letters
+ 
 def choose_difficulty():
- difficulty = input("Choose a difficulty level (easy, medium, hard): ")
- if difficulty.lower() == "easy":
-      return 10
- elif difficulty.lower() == "medium":
-      return 6
- elif difficulty.lower() == "hard":
-      return 4
- else:
-      print("Invalid choice. Defaulting to easy.")
-      return 10
+   difficulty = input("Choose a difficulty level (easy, medium, hard): ")
+   if difficulty.lower() == "easy":
+       return 10
+   elif difficulty.lower() == "medium":
+       return 6
+   elif difficulty.lower() == "hard":
+       return 4
+   else:
+       print("Invalid choice. Defaulting to easy.")
+       return 10
 
 def check_score():
- if os.path.exists('results.json'):
-     with open('results.json', 'r') as f:
-         results = json.load(f)
-     latest_score = score
-     print("Your current score is: ", latest_score)
- else:
-     print("No scores available yet.")
+   if os.path.exists('results.json'):
+       with open('results.json', 'r') as f:
+           results = json.load(f)
+       latest_score = results[-1]['score'] if results else 0
+       print("Your current score is: ", latest_score)
+   else:
+       print("No scores available yet.")
 
 def get_user_input(word, guessed_letters, score):
- while True:
-     guess = input("Guess a letter or type 'Score' to check your current score: ")
-     guess = guess.lower() # Convert to lowercase
-     if not guess.isalpha():
-         print("Please enter a single letter or 'Score'.")
-         continue
-     elif guess.lower() == "score":
-       check_score()
-       continue
-     return guess
+   while True:
+       guess = input("Guess a letter or type 'Score' to check your current score: ")
+       guess = guess.lower() # Convert to lowercase
+       if not guess.isalpha():
+           print("Please enter a single letter or 'Score'.")
+           continue
+       elif guess.lower() == "score":
+           check_score()
+           continue
+       return guess
 
 def save_result(word, attempts, result, score):
- data = {
-      "word": word,
-      "attempts": attempts,
-      "result": result,
-      "score": score # Save score
-  }
+   data = {
+       "word": word,
+       "attempts": attempts,
+       "result": result,
+       "score": score # Save score
+   }
 
- if os.path.exists('results.json'):
-     with open('results.json', 'r') as f:
-         results = json.load(f)
- else:
-     results = []
+   if os.path.exists('results.json'):
+       with open('results.json', 'r') as f:
+           results = json.load(f)
+   else:
+       results = []
+       print("File 'results.json' has been created.")
 
- results.append(data)
+   results.append(data)
 
- with open('results.json', 'w') as f:
-     json.dump(results, f)
+   with open('results.json', 'w') as f:
+       json.dump(results, f)
 
 def play_game():
  words = load_words()
