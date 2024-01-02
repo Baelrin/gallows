@@ -19,10 +19,7 @@ def display_hangman(missed_letters):
    print("_|_______")
 
 def check_letter(word, guessed_letters, letter):
-   if letter in word:
-       return True
-   else:
-       return False
+   return letter in word
 
 def choose_difficulty():
    difficulty = input("Choose a difficulty level (easy, medium, hard): ")
@@ -36,6 +33,14 @@ def choose_difficulty():
        print("Invalid choice. Defaulting to easy.")
        return 10
 
+def get_user_input():
+  while True:
+      guess = input("Guess a letter: ")
+      if not guess.isalpha() or len(guess) > 1:
+          print("Please enter a single letter.")
+          continue
+      return guess
+
 def play_game():
    words = load_words()
    word = choose_word(words)
@@ -47,7 +52,7 @@ def play_game():
    while len(missed_letters) < max_attempts:
        display_hangman(missed_letters)
        print("Current word: ", displayed_word)
-       guess = input("Guess a letter: ")
+       guess = get_user_input()
        if not guess.isalpha():
            print("Please enter a letter.")
            continue
