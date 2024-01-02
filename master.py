@@ -69,5 +69,8 @@ def play_game():
    if len(missed_letters) == max_attempts:
        print("You lost! The word was %s" % word)
        
-if __name__ == "__main__":
+while True:
    play_game()
+   restart = input("Do you want to play again? (yes/no): ")
+   if restart.lower() != "yes":
+       break
